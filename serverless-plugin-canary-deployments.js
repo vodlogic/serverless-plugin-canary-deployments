@@ -145,6 +145,7 @@ class ServerlessCanaryDeployments {
       'AWS::SNS::Topic': CfGenerators.sns.replaceTopicSubscriptionFunctionWithAlias,
       'AWS::SNS::Subscription': CfGenerators.sns.replaceSubscriptionFunctionWithAlias,
       'AWS::S3::Bucket': CfGenerators.s3.replaceS3BucketFunctionWithAlias,
+      'AWS::ElasticLoadBalancingV2::TargetGroup': CfGenerators.AlbTargetGroup.replaceAlbTargetGroupFunctionWithAlias,
       'AWS::Events::Rule': CfGenerators.cloudWatchEvents.replaceCloudWatchEventRuleTargetWithAlias,
       'AWS::Logs::SubscriptionFilter': CfGenerators.cloudWatchLogs.replaceCloudWatchLogsDestinationArnWithAlias
     }
@@ -163,6 +164,7 @@ class ServerlessCanaryDeployments {
     const snsTopics = this.getSnsTopicsFor(functionName)
     const snsSubscriptions = this.getSnsSubscriptionsFor(functionName)
     const s3Events = this.getS3EventsFor(functionName)
+    const albEvents = this.getAlbEventsFor(functionName)
     const cloudWatchEvents = this.getCloudWatchEventsFor(functionName)
     const cloudWatchLogs = this.getCloudWatchLogsFor(functionName)
     return Object.assign(
@@ -171,6 +173,7 @@ class ServerlessCanaryDeployments {
       eventSourceMappings,
       snsTopics,
       s3Events,
+      albEvents,
       cloudWatchEvents,
       cloudWatchLogs,
       snsSubscriptions
@@ -264,6 +267,21 @@ class ServerlessCanaryDeployments {
     const isMappingForFunction = _.pipe(
       _.prop('Properties.NotificationConfiguration.LambdaConfigurations'),
       _.map(_.prop('Function.Fn::GetAtt')),
+      _.flatten,
+      _.includes(functionName)
+    )
+    const getMappingsForFunction = _.pipe(
+      _.pickBy(isEventSourceMapping),
+      _.pickBy(isMappingForFunction)
+    )
+    return getMappingsForFunction(this.compiledTpl.Resources)
+  }
+
+  getAlbEventsFor (functionName) {
+    const isEventSourceMapping = _.matchesProperty('Type', 'AWS::ElasticLoadBalancingV2::TargetGroup')
+    const isMappingForFunction = _.pipe(
+      _.prop('Properties.Targets'),
+      _.map(_.prop('Id.Fn::GetAtt')),
       _.flatten,
       _.includes(functionName)
     )

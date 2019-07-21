@@ -1,0 +1,39 @@
+{
+  "service": "canary-deployments-test",
+  "custom": {
+    "deploymentSettings": {
+      "stages": [
+        "dev"
+      ]
+    }
+  },
+  "functions": {
+    "hello": {
+      "handler": "handler.hello",
+      "events": [
+        {
+          "alb": {
+            "name": "test-alb-listener",
+            "listenerArn": "arn:aws:elasticloadbalancing:eu-west-1:123456789012:listener/app/hello-world-ABC1DEFG2AB/a1b234c56789d0e1/ab1c234def5678ga",
+            "enabled": true
+          }
+        }
+      ],
+      "deploymentSettings": {
+        "type": "Linear10PercentEvery1Minute",
+        "alias": "Live",
+        "preTrafficHook": "preHook",
+        "postTrafficHook": "postHook",
+        "alarms": [
+          "HelloFooAlarm"
+        ]
+      }
+    },
+    "preHook": {
+      "handler": "hooks.pre"
+    },
+    "postHook": {
+      "handler": "hooks.post"
+    }
+  }
+}

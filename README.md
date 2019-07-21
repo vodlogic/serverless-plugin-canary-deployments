@@ -113,6 +113,7 @@ For now, the plugin only works with Lambda functions invoked by
 * Stream based (such as the triggered by Kinesis, DynamoDB Streams or SQS)
 * SNS based events
 * S3 events
+* Application Load Balancer Target Group Events
 * CloudWatch Scheduled events
 * CloudWatch Logs
 

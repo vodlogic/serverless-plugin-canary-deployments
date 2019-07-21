@@ -48,6 +48,14 @@ functions:
             Fn::GetAtt:
               - MyQueue
               - Arn
+      - alb:
+          listenerArn:
+            Fn::GetAtt:
+              - MyAlbListener
+              - Arn
+          priority: 1
+          conditions:
+            path: "/*"
     alarms:
       - name: foo
         namespace: 'AWS/Lambda'
